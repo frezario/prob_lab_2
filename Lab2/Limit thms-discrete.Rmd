@@ -1,0 +1,94 @@
+---
+title: "LLN and CLT for discrete RV"
+output:
+  html_document:
+    df_print: paged
+---
+
+## We illustrate LLN for two-point distribution assuming values $\pm1$
+
+### Generate the data
+```{r}
+p <- .9
+n <- 100         # sample size
+m <- 1000        # no. of repetitions
+mu <- 2*p -1     # expected value
+sigma <- 2*sqrt(p*(1-p)/n) #standard deviation
+twopointdata  <- replicate(m, mean(sample(c(-1,1), size = n, prob = c(1-p,p), replace = T)))
+```
+
+
+### Summarize the data and estimate the probability of $\{|M_n-\mu|>\varepsilon\}$
+
+```{r}
+eps <- .05
+summary(twopointdata)
+mean(abs(twopointdata-mu)>eps)
+```
+
+## Now draw the histogram and compare to the density of the corresponding normal approximation
+
+```{r}
+xrange = c(min(twopointdata),max(twopointdata))
+hist(twopointdata,
+     probability = T, 
+     breaks = 20, 
+     xlim = xrange,
+     main = "LLN for  discrete RV",
+     col = "lightblue");
+lines(density(twopointdata),xlim=xrange, col = "blue")
+
+x <- seq(min(twopointdata),max(twopointdata), by=.01)
+lines(x,dnorm(x,mu,sigma), col = "red")
+```
+
+#### If we increase the sample size $n$, the data will get more clustered around the true mean $\mu$, and the fraction of sample means outside the $\epsilon$-neighbourhood declines. Try various $n$ to see the effect
+
+
+## We now illustrate the CLT
+
+### CLT: compare the ecdf and normal cdf (not normalized)
+
+```{r}
+plot(ecdf(twopointdata), col = "darkblue", 
+     main = "ecdf of sample means",
+     xlim = c(min(twopointdata), max(twopointdata)),
+     xlab = "t",
+     ylab = "F(t)")
+x <- seq(min(twopointdata), max(twopointdata),by = .01)
+lines(x, pnorm(x, mean = mu, sd = sigma), col = "red")
+max(abs(ecdf(twopointdata)(x)-pnorm(x, mean = mu, sd = sigma)))
+```
+
+
+### CLT: compare the ecdf and normal cdf (normalized)
+
+```{r}
+twopointdata.norm <- (twopointdata - mu)/sigma 
+plot(ecdf(twopointdata.norm), col = "darkblue", 
+     main = "ecdf of sample means",
+     xlim = c(-3,3),
+     xlab = "t",
+     ylab = "F(t)")
+x <- seq(-3,3,by = .01)
+lines(x, pnorm(x), col = "red")
+max(abs(ecdf(twopointdata.norm)(x)-pnorm(x)))
+```
+
+## Bonus: for large $n$, the distribution of $\mathscr{P}(n)$ is almost normal
+
+```{r}
+# Approximation of a Poisson distribution by normal one
+howgood <- function(n){
+  meanpois <- n   # parameters of normal approximation
+  sdpois <- sqrt(n)  #  parameters of normal approximation
+  x <- seq(meanpois-3*sdpois, meanpois + 3*sdpois, by = .1)
+  plot(x, ppois(x, n), col = "red")
+  lines(x,pnorm(x, mean = meanpois, sd= sdpois), col = "darkblue")
+  max(abs(ppois(x, n) - pnorm(x, mean = meanpois, sd= sdpois)))
+}
+```
+
+```{r}
+howgood(30)
+```

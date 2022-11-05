@@ -1,0 +1,128 @@
+---
+title: 'R-intro: Random Variables'
+output:
+  html_document:
+    df_print: paged
+---
+
+##  1. Generating random variables:  
+- p{distr} generates a cdf; 
+- d{distr} generates a pdf/pmf
+- q{distr} generates quantiles
+- r{distr} generates a sample
+   
+Here **{distr}** can be any distribution:  
+
+- norm (normal)  
+- exp  (exponential)  
+- unif (uniform)  
+- gamma (gamma)  
+- chisq (chi-square)  
+- binom (binomial)  
+- geom  (geometric)  
+- pois  (Poisson)  
+    
+
+## 2. Example: plotting exponential distribution
+
+```{r}
+z <- seq(0,2,by=0.01); length(z)
+plot(z,pexp(z, rate = 2), 
+     col="purple", 
+     ylim = c(0,2), 
+     ylab = "values", 
+     type = "l", 
+     main = "Plots for exponential distribution")
+lines(z, dexp(z,rate = 2), col="darkblue")
+z1 <- rexp(1000,rate=2)
+lines(ecdf(z1), col = "red")
+```
+
+
+## 3. Example: modelling a biased die   
+   
+```{r}
+# n is the size of a sample
+n <- 1000
+# m is no. of repetitions
+m <- 1000
+# generating biased die throws
+die_pr <- c(.1,.2,.2,.3,.1,.1)   # probabilities of throwing sides 1 to 6
+diethrows <- sample(1:6, prob = die_pr, size = n, replace = T);
+# summarise the results:
+#diethrows
+
+table(diethrows)
+tabulate(diethrows)
+# draw the histogram
+hist(diethrows,
+     probability = T,
+     breaks = 6,
+    #breaks = seq(0.5,6.6),
+     main = paste("Histogram of the", n, "throws of a biased die"),
+     col = "lightblue",
+     xlab = "Values",
+     xlim = c(0,7)
+     )
+
+```
+
+## 3. Means and their visialisation:
+
+```{r}
+# means of diethrows; dtm ="diethrowmeans"
+dtm <- replicate(m, mean(sample(1:6, prob = die_pr, size = n, replace = T)))
+# theoretical expected value
+length(dtm)
+theorexp <- sum((1:6)*die_pr); theorexp; mean(dtm)
+# theoretical variance
+theorvar <- sum((1:6)^2*die_pr) - theorexp^2; theorvar/n; var(dtm)
+# summary of dtm
+summary(dtm)
+
+# histogram
+hist(dtm,
+     probability = T,
+     breaks = 30,
+    #breaks = seq(0.5,6.6),
+     main = paste("Means of n =", n, "throws of a biased die"),
+     col = "lightblue",
+     xlab = "Means",
+     xlim = c(min(dtm),max(dtm))
+     )
+# superimpose normal distribution
+x <- seq(min(dtm),max(dtm), by = .01)
+lines(x, dnorm(x, mean = mean(dtm), sd = sd(dtm)), col ="red", lwd = 2)
+```
+
+## 4. Comparing the empirical and theoretical cdf
+
+```{r}
+# empirical cdf
+plot(ecdf(dtm))
+x <- seq(0,6,by=.01)
+# superimposing the approximation by normal distribution due CLT
+lines(x, pnorm(x, mean = mean(dtm), sd = sd(dtm)), col ="red", lwd = 2)
+# how large is the difference?
+max(abs(ecdf(dtm)(x)-pnorm(x, mean = mean(dtm), sd = sd(dtm))))
+# does it agree with the LLN?
+sum(abs(dtm - theorexp)>0.1)/m
+```
+
+
+## Task 2
+
+1. Generate a sample of size 1000 combined from two samples of size 500 from the normal distributions N(mu,5) with mu = 0 and mu = 1 
+2. Calculate sample mean, sample standard deviation and compare with the exact values
+3. For q= 0.1,...,0.9 calculate sample q-percentiles manually 
+  (i.e. by sorting the data and picking the corresponding values) and by using percentile
+4. Compare with theoretical quantiles of that distribution
+5. Check the k-sigma rule for k=1,2,3
+6. Draw a histogram of the data
+7. Draw the theoretical density 
+
+```{r}
+#   Your code goes here
+
+```
+

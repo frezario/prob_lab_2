@@ -1,0 +1,315 @@
+---
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Probability and Statistics
+
+# Lab Assignment 1: Naive Bayes Classifier
+
+### *Ліліана Гоцко, Світлана Говорова, Демчук Назар*
+
+## Introduction
+
+During the past three weeks, you learned a couple of essential notions
+and theorems, and one of the most important among them is the *Bayes
+theorem*.
+
+One of its applications is **Naive Bayes classifier**, which is a
+probabilistic classifier whose aim is to determine which class some
+observation probably belongs to by using the Bayes formula:
+$$\mathsf{P}(\mathrm{class}\mid \mathrm{observation})=\frac{\mathsf{P}(\mathrm{observation}\mid\mathrm{class})\mathsf{P}(\mathrm{class})}{\mathsf{P}(\mathrm{observation})}$$
+
+Under the strong independence assumption, one can calculate
+$\mathsf{P}(\mathrm{observation} \mid \mathrm{class})$ as
+$$\mathsf{P}(\mathrm{observation}) = \prod_{i=1}^{n} \mathsf{P}(\mathrm{feature}_i), \qquad \mathsf{P}(\mathrm{observation} \mid \mathrm{class}) = \prod_{i=1}^{n} \mathsf{P}(\mathrm{feature}_i \mid \mathrm{class}),$$
+where $n$ is the total number of features describing a given
+observation. Thus, $\mathsf{P}(\mathrm{class}|\mathrm{observation})$ now
+can be calculated as
+
+$$\mathsf{P}(\mathrm{class} \mid \mathrm{\mathrm{observation}}) = \mathsf{P}(\mathrm{class})\times \prod_{i=1}^{n}\frac{\mathsf{P}(\mathrm{feature}_i\mid \mathrm{class})}{\mathsf{P}(\mathrm{feature}_i)}\tag{1}$$
+
+All the terms on the right-hand side can be estimated from the data as
+respective relative frequencies;\
+see [this
+site](https://monkeylearn.com/blog/practical-explanation-naive-bayes-classifier/)
+for more detailed explanations.
+
+## Data description
+
+There are 5 datasets uploaded on the cms.
+
+To determine your variant, take your team number from the list of teams
+on cms and take *mod 5* - this is the number of your data set.
+
+-   **0 - authors** This data set consists of citations of three famous
+    writers: Edgar Alan Poe, Mary Wollstonecraft Shelley and HP
+    Lovecraft. The task with this data set is to classify a piece of
+    text with the author who was more likely to write it.
+
+-   **1 - discrimination** This data set consists of tweets that have
+    discriminatory (sexism or racism) messages or of tweets that are of
+    neutral mood. The task is to determine whether a given tweet has
+    discriminatory mood or does not.
+
+-   **2 - fake news** This data set contains data of American news: a
+    headline and an abstract of the article. Each piece of news is
+    classified as fake or credible. The task is to classify the news
+    from test.csv as credible or fake.
+
+-   **3 - sentiment** All the text messages contained in this data set
+    are labeled with three sentiments: positive, neutral or negative.
+    The task is to classify some text message as the one of positive
+    mood, negative or neutral.
+
+-   **4 - spam** This last data set contains SMS messages classified as
+    spam or non-spam (ham in the data set). The task is to determine
+    whether a given message is spam or non-spam.
+
+Each data set consists of two files: *train.csv* and *test.csv*. The
+first one you will need find the probabilities distributions for each of
+the features, while the second one is needed for checking how well your
+classifier works.
+
+```{r}
+# here goes a list of recommended libraries,
+# though you may install other ones if they are needed
+library(tidytext)
+library(readr)
+library(dplyr)
+library(ggplot2)
+```
+
+## Instructions
+
+-   The first step is data pre-processing, which includes removing
+    punctuation marks and stop words
+
+-   represent each message as a bag-of-words
+
+-   using the training set, calculate all the conditional probabilities
+    in formula (1)
+
+-   use those to predict classes for messages in the test set
+
+-   evaluate effectiveness of the classifier by calculating the
+    corresponding metrics
+
+-   shortly summarize your work
+
+-   do not forget to submit both the (compiled) Rmd source file and the
+    .html output
+
+## Data pre-processing
+
+```{r}
+list.files(getwd())
+```
+
+```{r}
+test_path <- "data/1-discrimination/test.csv"
+train_path <- "data/1-discrimination/train.csv"
+
+stop_words <- read_file("stop_words.txt")
+
+
+stop_words <- read_file("stop_words.txt")
+# https://stackoverflow.com/questions/27195912/why-does-strsplit-return-a-list
+splitted_stop_words <- strsplit(stop_words, split='\n')
+splitted_stop_words <- splitted_stop_words[[1]]
+```
+
+```{r}
+train <-  read.csv(file = train_path, stringsAsFactors = FALSE)
+test <-  read.csv(file = test_path, stringsAsFactors = FALSE)
+```
+
+```{r}
+# note the power functional features of R bring us! 
+#tidy_text <- unnest_tokens(train, 'splitted', 'tweet', token="words") %>% 
+  #filter(!splitted %in% splitted_stop_words & nchar(splitted) > 2)
+#tidy_text$splitted %>% tibble(name = .) %>% filter(xfun::is_ascii(name)== T)
+tidy_text <- unnest_tokens(train, 'splitted', 'tweet', token="words") %>% filter(!splitted %in% splitted_stop_words)
+
+```
+
+## Classifier implementation
+
+```{r}
+naiveBayes <- setRefClass("naiveBayes",
+       fields = c("counts_tidy", "prob_tw_neutr", "prob_tw_discr", "results"),
+       methods = list(
+                    fit = function(tidy_text)
+                    {
+                      counts_tidy <<- tidy_text %>% count(splitted, sort = TRUE)
+                      
+                      n_overall <- nrow(tidy_text)
+                      n_discr <- nrow(tidy_text %>% filter(tidy_text$label=="discrim"))
+                      n_neutr <- nrow(tidy_text %>% filter(tidy_text$label=="neutral"))
+
+                      prob_tw_neutr <<- n_neutr/n_overall
+                      prob_tw_discr <<- n_discr/n_overall
+
+                      tidy_discrm <- tidy_text %>% filter(tidy_text$label=="discrim")
+                      counts_discrm <- tidy_discrm %>% count(splitted, sort = TRUE)
+                          
+                      tidy_neutr <- tidy_text %>% filter(tidy_text$label=="neutral")
+                      counts_neutr <- tidy_neutr %>% count(splitted, sort = TRUE)
+
+                      counts_tidy <<- merge(counts_discrm, counts_tidy, by = "splitted", all = TRUE)
+                      colnames(counts_tidy)[colnames(counts_tidy) == "n.x"] <<- "n_discrm"
+                      colnames(counts_tidy)[colnames(counts_tidy) == "n.y"] <<- "n_overall"
+                      counts_tidy <<- merge(counts_neutr, counts_tidy, by = "splitted", all = TRUE)
+                      colnames(counts_tidy)[colnames(counts_tidy) == "n"] <<- "n_neutr"
+                          
+                      counts_tidy[is.na(counts_tidy)] <<- 0
+                          
+                      counts_tidy$n_neutr <<- counts_tidy$n_neutr + 1
+                      counts_tidy$n_discrm <<- counts_tidy$n_discrm + 1
+                          
+                      sum_discr <- sum(counts_tidy $n_discrm)
+                      sum_neutr <- sum(counts_tidy $n_neutr)
+                          
+                      counts_tidy$probs_discr <<- counts_tidy$n_discrm / sum_discr
+                      counts_tidy$probs_neutr <<- counts_tidy$n_neutr / sum_neutr
+                          
+                          
+                    },
+                    
+                    # return prediction for a single message 
+                    predict = function(message)
+                    {
+                      entries = strsplit(message, split = " ")[[1]]
+                      entries <- entries[!entries %in% splitted_stop_words]
+                      
+                      start_prob_neutr = 1
+                      start_prob_discrm = 1
+                      
+                      
+                      for (word in entries) {
+                        if (word %in% counts_tidy$splitted){
+                          start_prob_neutr = start_prob_neutr * counts_tidy[which(counts_tidy$splitted == word), 6]
+                        }else{
+                          start_prob_neutr = start_prob_neutr * 1/(2 * nrow(counts_tidy))
+                        }
+                      
+                      }
+                      
+                      for (word in entries) {
+                        if (word %in% counts_tidy$splitted){
+                          start_prob_discrm = start_prob_discrm * counts_tidy[which(counts_tidy$splitted == word), 5]
+                        }else{
+                          start_prob_discrm = start_prob_discrm * 1/(2 * sum(counts_tidy $n_discrm))
+                        }
+                      
+                      }
+                      
+                      start_prob_discrm = start_prob_discrm * prob_tw_discr
+                      start_prob_neutr = start_prob_neutr * prob_tw_neutr
+                      #print(start_prob_discrm)
+                      #print(start_prob_neutr)
+                      
+                      if (start_prob_neutr < start_prob_discrm){
+                        return("discrim")
+                      }
+                      else{
+                        return("neutral")
+                      }
+                    },
+                    
+
+                    score = function(X_test, y_test)
+                    {
+                      results <<- data_frame("tweets" = X_test)
+                      results <<- results %>% rowwise() %>% mutate(y_hat = predict(tweets))
+                      results <<- results 
+                      results$y <<- y_test
+                      
+                      results <<- results  %>% mutate(successful = if_else(y_hat == y, 1, 0))
+                      
+                      return (sum(results$successful)/nrow(results))
+                    }
+))
+
+model = naiveBayes()
+```
+
+## Measure effectiveness of your classifier
+
+```{r}
+model$fit(tidy_text)
+counts_tidy <- model$counts_tidy
+```
+
+```{r}
+X_test <- train[1:200,4]
+y_test <- train[1:200,3]
+model$score(X_test, y_test)
+```
+
+## Data visualization
+
+```{r}
+counts_tidy <<- tidy_text %>% count(splitted, sort = TRUE)
+                      
+  n_overall <- nrow(tidy_text)
+  n_discr <- nrow(tidy_text %>% filter(tidy_text$label=="discrim"))
+  n_neutr <- nrow(tidy_text %>% filter(tidy_text$label=="neutral"))
+  prob_tw_neutr <<- n_neutr/n_overall
+  prob_tw_discr <<- n_discr/n_overall
+  tidy_discrm <- tidy_text %>% filter(tidy_text$label=="discrim")
+  counts_discrm <- tidy_discrm %>% count(splitted, sort = TRUE)
+      
+  tidy_neutr <- tidy_text %>% filter(tidy_text$label=="neutral")
+  counts_neutr <- tidy_neutr %>% count(splitted, sort = TRUE)
+                      
+ggplot(head(tidy_discrm %>% count(splitted, sorted=TRUE), 50)) +
+  geom_col(aes(x = splitted, y = n), 
+            color = 'darkgreen') +
+  
+  ggtitle("Basic Plot") +
+  xlab("words") +
+  ylab("NUMBER") +
+  theme_bw() +
+  theme(axis.text.x = element_text(face = 'bold', size = 10, angle=90),
+        axis.text.y = element_text(face = 'bold', size = 10))
+ggplot(head(tidy_neutr %>% count(splitted, sorted=TRUE), 50)) +
+  geom_col(aes(x = splitted, y = n), 
+            color = 'darkgreen') +
+  
+  ggtitle("Basic Plot") +
+  xlab("words") +
+  ylab("NUMBER") +
+  theme_bw() +
+  theme(axis.text.x = element_text(face = 'bold', size = 10, angle=90),
+        axis.text.y = element_text(face = 'bold', size = 10))
+```
+
+-   Show failure cases.
+
+```{r}
+var <- model$results
+print(var[which(var$successful== 0), 1])
+#print(counts_neutr[order(counts_neutr$n, decreasing = TRUE),])
+
+```
+
+## Conclusions
+
+- We created a simple multinomial naive Bayes classifier and conducted an
+analysis of it. We found out how P&S can help us to come up with a
+solution to a problem that can't be solved using ordinary methods. 
+We've also covered possible applications of Bayes' formula in real life and
+learned how to classify objects using the naive Bayes principle.
+- The most difficult thing was to prevent the problem of "zero" probability,
+due to which the total conditional probability of our tweet belonging
+to a certain class could become zero. The main problem, though, was not the
+complexity of the task itself, but the limitations in the use of tools - 
+honestly, the R language did not prove to be helpful in completing the task.
+Not least because its syntax is practical and does not conform to modern 
+program design standards.
