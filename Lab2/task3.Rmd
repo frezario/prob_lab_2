@@ -280,3 +280,7 @@ sums = colSums(matrix(rexp(100*count, rate = N_CLT * nu1), nrow = 100))
 ```{r}
 mean(sums >= 1)
 ```
+
+### Conclusions
+
+In this task we've learned how the exponential r.v can be used to approximate the outcome of a real-world experiment, namely the amount of particles that decay per unit of time and how we can use that to find out whether the place is safe to be in. Also, we've noticed how R can come in handy in this task by providing powerful and expressive syntax to perform difficult tasks in 1 line of code.
