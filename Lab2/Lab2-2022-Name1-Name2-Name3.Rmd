@@ -19,7 +19,7 @@ output:
 *  The __team id number__ referred to in tasks is the __two-digit__ ordinal number of your team on the list. Include the line __set.seed(team id number)__ at the beginning of your code to make your calculations reproducible. Also observe that the answers **do** depend on this number!  
 *  Take into account that not complying with these instructions may result in point deduction regardless of whether or not your implementation is correct. 
 
-### Task 1
+### Task 1 (Nazar Demchuk)
 
 #### In this task, we discuss the $[7,4]$ Hamming code and investigate its reliability. That coding system can correct single errors in the transmission of $4$-bit messages and proceeds as follows:
 
@@ -196,7 +196,7 @@ hist(x=correct_messages_truth_table,
 The fact that the column with $0$ errors in the message is the highest is not surprising because there was only a $28$ percent chance of every given bit being corrupted (which is still quite high, though). Also, for $k=1,2,3$ the graph is pretty similar to the binomial distribution graph.
 
 
-### Task 2.
+### Task 2 (Dmytro Hrebeniuk)
 
 #### In this task, we discuss a real-life process that is well modelled by a Poisson distribution. As you remember, a Poisson random variable describes occurrences of rare events, i.e., counts the number of successes in a large number of independent random experiments. One of the typical examples is the **radioactive decay** process.
 
@@ -220,7 +220,6 @@ The fact that the column with $0$ errors in the message is the highest is not su
 ```{r}
 # 1.1
 
-id <- 28
 m <- id/10^6            #
 T <- 30.1*365*24*60*60  #
 lambda <- log(2)/T      #  calculating everything we have to,
@@ -394,59 +393,124 @@ print(condit)
 Solving these examples, we were able to apply previously learned knowledge about different types of distributions, as well as verify the correctness of how these distributions work with real cases. We were also able to verify the effectiveness of Markov's inequality, Chernoff bound, Central Limit Theorem and much more
 
 
-### Task 3. 
-#### In this task, we use the Central Limit Theorem approximation for continuous random variables. 
-#### One of the devices to measure radioactivity level at a given location is the Geiger counter. When the radioactive level is almost constant, the time between two consecutive clicks of the Geiger counter is an exponentially distributed random variable with parameter $\nu_1 = \mathtt{team\,id\,number} + 10$. Denote by \(X_k\) the random time between the \((k-1)^{\mathrm{st}}\) and \(k^{\mathrm{th}}\) click of the counter. 
+### Task 3 (Taras Yaroshko)
 
-1.  Show that the distribution of the sample means of \(X_1, X_2,\dots,X_n\) gets very close to a normal one (which one?) as $n$ becomes large.  To this end,
-    +  simulate the realizations $x_1,x_2,\dots,x_n$ of the \textbf{r.v.} $X_i$ and calculate the sample mean $s=\overline{\mathbf{x}}$;  
-    +  repeat this $K$ times to get the sample $\mathbf{s}=(s_1,\dots,s_K)$ of means and then the \emph{empirical cumulative distribution} function \(F_{\mathbf{s}}\) of $\mathbf{s}$;  
-    +  identify $\mu$ and $\sigma^2$ such that the \textbf{c.d.f.} of $\mathscr{N}(\mu,\sigma^2)$ is close to the \textbf{e.c.d.f.} \(F_{\mathbf{s}}\) of and plot both \textbf{c.d.f.}'s on one graph to visualize their proximity;  
-    +  calculate the maximal difference between the two \textbf{c.d.f.}'s;  
-    +  consider cases $n = 5$, $n = 10$, $n=50$ and comment on the results. 		
-    	
-2.  The place can be considered safe when the number of clicks in one minute does not exceed $100$. It is known that the parameter $\nu$ of the resulting exponential distribution is proportional to the number $N$ of the radioactive samples, i.e., \(\nu = \nu_1*N\), where \(\nu_1\) is the parameter for one sample. Determine the maximal number of radioactive samples that can be stored in that place so that, with probability \(0.95\), the place is identified as safe. To do this,  
-    +  express the event of interest in terms of the \textbf{r.v.} $S:= X_1 + \cdots + X_{100}$;  
-    +  obtain the theoretical bounds on \(N\) using the Markov inequality, Chernoff bound and Central Limit Theorem and compare the results;  
-    +  with the predicted \(N\) and thus \(\nu\), simulate the realization $x_1,x_2,\dots,x_{100}$ of the $X_i$ and of the sum \(S = X_1 + \cdots + X_{100}\);  
-    +  repeat this $K$ times to get the sample $\mathbf{s}=(s_1,\dots,s_K)$ of total times until the \(100^{\mathrm{th}}\) click;  
-    +  estimate the probability that the location is identified as safe and compare to the desired level \(0.95\)
+#### In this task, we use the Central Limit Theorem approximation for continuous random variables.x
 
-#### First, generate samples an sample means: 
+#### One of the devices to measure radioactivity level at a given location is the Geiger counter. When the radioactive level is almost constant, the time between two consecutive clicks of the Geiger counter is an exponentially distributed random variable with parameter $\nu_1 = 38$. Denote by $X_k$ the random time between the $(k-1)^{\mathrm{st}}$ and $k^{\mathrm{th}}$ click of the counter.
 
-```{r}
-nu1 <- 1  # change this!
-K <- 1e3
-n <- 5
-sample_means <- colMeans(matrix(rexp(n*K, rate = nu1), nrow=n))
-```
+1.  Show that the distribution of the sample means of $X_1, X_2,\dots,X_n$ gets very close to a normal one (which one?) as $n$ becomes large. To this end,
+    -   simulate the realizations $x_1,x_2,\dots,x_n$ of the \textbf{r.v.} $X_i$ and calculate the sample mean $s=\overline{\mathbf{x}}$;\
+    -   repeat this $K$ times to get the sample $\mathbf{s}=(s_1,\dots,s_K)$ of means and then the \emph{empirical cumulative distribution} function $F_{\mathbf{s}}$ of $\mathbf{s}$;\
+    -   identify $\mu$ and $\sigma^2$ such that the \textbf{c.d.f.} of $\mathscr{N}(\mu,\sigma^2)$ is close to the \textbf{e.c.d.f.} $F_{\mathbf{s}}$ of and plot both \textbf{c.d.f.}'s on one graph to visualize their proximity;\
+    -   calculate the maximal difference between the two \textbf{c.d.f.}'s;\
+    -   consider cases $n = 5$, $n = 10$, $n=50$ and comment on the results.
+2.  The place can be considered safe when the number of clicks in one minute does not exceed $100$. It is known that the parameter $\nu$ of the resulting exponential distribution is proportional to the number $N$ of the radioactive samples, i.e., $\nu = \nu_1*N$, where $\nu_1$ is the parameter for one sample. Determine the maximal number of radioactive samples that can be stored in that place so that, with probability $0.95$, the place is identified as safe. To do this,
+    -   express the event of interest in terms of the \textbf{r.v.} $S:= X_1 + \cdots + X_{100}$;\
+    -   obtain the theoretical bounds on $N$ using the Markov inequality, Chebyshev bound and Central Limit Theorem and compare the results;\
+    -   with the predicted $N$ and thus $\nu$, simulate the realization $x_1,x_2,\dots,x_{100}$ of the $X_i$ and of the sum $S = X_1 + \cdots + X_{100}$;\
+    -   repeat this $K$ times to get the sample $\mathbf{s}=(s_1,\dots,s_K)$ of total times until the $100^{\mathrm{th}}$ click;\
+    -   estimate the probability that the location is identified as safe and compare to the desired level $0.95$
 
-#### Next, calculate the parameters of the standard normal approximation
+### 3.1
+
+#### Generating samples an sample means:
 
 ```{r}
-mu <- 0       # change this!
-sigma <- 1    # change this!
+nu1 <- 38
+count <- 1e3
+n <- 100
+sample_means <- colMeans(matrix(rexp(n*count, rate = nu1), nrow=n))
 ```
 
-#### We can now plot ecdf and cdf
+#### Calculating the parameters of the standard normal approximation:
+
+```{r}
+# mu <- mean(sample_means)
+# sigma <- sd(sample_means)
+mu <- 1 / nu1
+sigma <- mu / sqrt(n)
+```
+
+#### We can now plot ecdf and cdf:
 
 ```{r}
 xlims <- c(mu-3*sigma,mu+3*sigma)
+ylims <- c(-0.5, 1.5)
 Fs <- ecdf(sample_means)
-plot(Fs, 
-     xlim = xlims, 
-     col = "blue",
-     lwd = 2,
-     main = "Comparison of ecdf and cdf")
+plot(Fs, xlim = xlims, ylim=ylims, col = "blue", lwd = 1, main = "Comparison of ecdf and cdf")
 curve(pnorm(x, mean = mu, sd = sigma), col = "red", lwd = 2, add = TRUE)
 ```
 
-__Next, proceed with all the remaining steps__
+#### Calculating the maximal difference between the two cdf's:
 
+```{r}
+max(abs(Fs(xlims) - pnorm(xlims, mean = mu, sd = sigma)))
+```
 
-__Do not forget to include several sentences summarizing your work and the conclusions you have made!__ 
+### 3.2
 
+#### The event of interest:
 
-### General summary and conclusions
+```{r}
+num = 100
+S = sum(sample_means[1:100])
+S
+```
 
-SUmmarize here what you've done, whether you solved the tasks, what difficulties you had etc
+#### Theoretical bounds:
+
+**Markov bound:**
+
+```{r}
+seconds = 1
+safe_perc = 0.95
+#Upper bound
+N_Markov = num / (nu1 * seconds * safe_perc)
+N_Markov
+```
+
+**Chebyshev's bound:**
+
+```{r}
+N_Chebyshev = (num * safe_perc + sqrt(num * safe_perc - safe_perc * safe_perc)) / (nu1 * seconds * safe_perc)
+N_Chebyshev
+```
+
+**Central Limit Theorem:**
+
+```{r}
+N_CLT = 1
+while(TRUE){
+  prob = pnorm((seconds - (num / (nu1 * N_CLT))) / (sqrt(num) / (nu1 * N_CLT)))
+  if (prob >= 0.05){
+    break
+  }
+  N_CLT = N_CLT + 1
+}
+N_CLT = N_CLT - 1
+N_CLT
+```
+
+**Simulate the realization**
+
+```{r}
+s_after = sum(rexp(100, rate = N_CLT * nu1))
+s_after
+```
+
+**Repeat it K times**
+
+```{r}
+sums = colSums(matrix(rexp(100*count, rate = N_CLT * nu1), nrow = 100))
+```
+
+**Estimate the probability that the location is identified as safe**
+
+```{r}
+mean(sums >= 1)
+```
+
+### Conclusions
+
+In this task we've learned how the exponential r.v can be used to approximate the outcome of a real-world experiment, namely the amount of particles that decay per unit of time and how we can use that to find out whether the place is safe to be in. Also, we've noticed how R can come in handy in this task by providing powerful and expressive syntax to perform difficult tasks in 1 line of code.
