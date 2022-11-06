@@ -140,6 +140,8 @@ mu <- N * lambda        #
 K <- 1e3      
 n <- 5
 
+
+
 # X - r. v.
 X <- rpois(n*K, lambda = mu)
 
@@ -182,55 +184,6 @@ plot(Fs,
 
 curve(pnorm(x, mean = mu, sd = sigma), col = "red", lwd = 2, add = TRUE)
 ```
-
-Calculation of the maximum difference between cdf an ecdf
-
-:   
-
-```{r}
-# 2.4
-
-x = seq(mu-3*sigma, mu+3*sigma, by = 0.01)
-
-max(abs(ecdf(samp)(x)-pnorm(x, mean = mean(samp), sd = sd(samp))))
-
-```
-
-```{r}
-# 2.5
-max_difference.func <- function(n) {
-  means <- replicate(K, mean(colMeans(matrix(rpois(n*K, lambda = mu)))))
-  norm_mu <- mean(means)
-  sigma <- sd(means)
-  
-  x = seq(min(means), max(means), by = .01)
-  return(max(abs(ecdf(means)(x)-pnorm(x, norm_mu, sigma))))
-}
-
-diff_5 <- max_difference.func(5)
-diff_10 <- max_difference.func(10)
-diff_50 <- max_difference.func(50)
-
-diff_5
-diff_10
-diff_50
-
-
-```
-
-As we see, the number K and n so large, that the average difference are all the same
-
-```{r}
-# 3.1
-one_x <- colSums(matrix(rpois(n, lambda = mu), nrow=1))
-K = 1e8
-# 3.2
-n = 24
-samp <- colSums(matrix(rpois(n*K, lambda = mu), nrow=n))
-# 3.3
-# ????
-```
-
 
 
 ### Task 3. 
