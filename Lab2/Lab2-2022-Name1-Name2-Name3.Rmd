@@ -274,6 +274,125 @@ plot(Fs,
 curve(pnorm(x, mean = mu, sd = sigma), col = "red", lwd = 2, add = TRUE)
 ```
 
+Calculation of the maximum difference between cdf an ecdf
+
+```{r}
+# 2.4
+
+x = seq(mu-3*sigma, mu+3*sigma, by = 0.01)
+
+max(abs(ecdf(samp)(x)-pnorm(x, mean = mean(samp), sd = sd(samp))))
+
+```
+
+```{r}
+# 2.5
+max_difference.func <- function(n) {
+  means <- replicate(K, mean(colMeans(matrix(rpois(n*K, lambda = mu)))))
+  norm_mu <- mean(means)
+  sigma <- sd(means)
+  
+  x = seq(min(means), max(means), by = .01)
+  return(max(abs(ecdf(means)(x)-pnorm(x, norm_mu, sigma))))
+}
+
+diff_5 <- max_difference.func(5)
+diff_10 <- max_difference.func(10)
+diff_50 <- max_difference.func(50)
+
+diff_5
+diff_10
+diff_50
+
+
+```
+
+As we see, the number K and n are so large, that the average max difference are all the same. If we would take much bigger I think we will get better approximation. Anyway ecdf and cdf approximations are quite well.
+
+```{r}
+# 3.1
+one_x <- colSums(matrix(rpois(n, lambda = mu), nrow=1))
+spec_nums <- length(which(one_x>8*(10^8)))
+cat("for n=5 the amound of sums that are bigger than 8e8\n")
+spec_nums
+cat("max sum\n")
+max_sum = max(one_x)
+max_sum
+```
+
+Markov inequality$$
+P(S{n}>8e8) \leq \frac{1}{8e8}\mu n < .05
+$$
+
+(0.5 = 1-0.95)
+
+(from the inequality express n) with $\mu\approx88256552$
+
+$$
+n< \frac{.05*8e8}{\mu}
+$$
+
+```{r}
+cat(.05*8e8/N/lambda)
+mu
+sigma
+```
+
+as we see, this will occur for n \< .4532243
+
+next we will obtain the upper bound of Chernoff inequality($\sigma\approx4295.206$):
+
+$$
+P(\frac{S_{n}-n\mu}{\sigma\sqrt{n}}> \frac{8e8-n\mu}{\sigma\sqrt{n}})\leq exp{{(-
+\frac{8e8-n\mu}{4\sigma\sqrt(n)})^2}}
+$$
+
+I will equate it to .05 and find n with $\mu\approx88256438$ $\sigma\approx4365.243$
+
+$$e^{-(\frac{8e8-n\mu}{4\sigma\sqrt(n)})^2} = .05 \Rightarrow ln(e^{-(\frac{8e8-n\mu}{4\sigma\sqrt(n)})^2}) = ln(.05)$$
+
+$$n \approx 9.064$$
+
+[wolfram](https://www.wolframalpha.com/input?i=-%28%28800000000-181846*4365.243%29%2F%284*4365.243*sqrt%28181846%29%29%29%5E2+%3D+ln%280.5%29)
+
+### n = 9 (It is calculated using WolframAlpha)is an upper bound. The answer is pretty precise and already satisfies the condition
+
+Central limit theorem
+
+$$Z_n:=\frac{S_n-\mu\cdot n}{\sigma\sqrt{n}}$$ $$Z_n\sim N(0, 1)$$ $$P(\frac{S_{n}-n\mu}{\sigma\sqrt{n}}< \frac{8\cdot 10^8-n\mu}{\sigma\sqrt{n}}) \rightarrow \Phi(\frac{8\cdot 10^8-n\mu}{\sigma\sqrt{n}})\geq .95$$
+
+$$\frac{8\cdot 10^8-n\mu}{\sigma\sqrt{n}} = 1,65$$
+
+[new_wolfram](https://www.wolframalpha.com/input?i=%28800000000-n*88256438%29%2F%284365.243*sqrt%28n%29%29%3D1.65)
+
+The result is the same $n \approx 9.064$
+
+### n = 9 (It is calculated using WolframAlpha)is an upper bound. The answer is pretty precise and already satisfies the condition
+
+compare the result
+
+This satisfies the results
+
+```{r}
+n <- 9
+colum_sum <- colSums(matrix(rpois(n * K, lambda = mu), nrow = n))
+condit <- length(which(colum_sum > 8e8))
+print(condit)
+
+```
+
+This does not satisfies the result
+
+```{r}
+n <- 18
+colum_sum <- colSums(matrix(rpois(n * K, lambda = mu), nrow = n))
+condit <- length(which(colum_sum > 8e8))
+print(condit)
+
+```
+
+Solving these examples, we were able to apply previously learned knowledge about different types of distributions, as well as verify the correctness of how these distributions work with real cases. We were also able to verify the effectiveness of Markov's inequality, Chernoff bound, Central Limit Theorem and much more
+
 
 ### Task 3. 
 #### In this task, we use the Central Limit Theorem approximation for continuous random variables. 
